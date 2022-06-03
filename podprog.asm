@@ -1,37 +1,37 @@
-include io.asm
-.model small
-.stack 100
-.data
-  msg db "Enter array: ", 0Ah, 0Dh, '$'
-.code 
-public podprog
-podprog proc far
-      push bp
-      mov bp, sp
-      push ds
-      push bx
-      mov ah, 9
-      lea dx, msg
-      int 21h
-      mov si, 0
-      mov cx, bx
-starting:
-      mov ah,01h
-      int 21h
-      cmp al,' '
-      jne ifelse
-      jmp cycle
-ifelse:
-      mov ds:[si],al
-      inc si
-cycle:
-      loop starting
-      mov al, '$'
-      mov ds:[si], al
-      newline
-      pop bx
-      pop ds
-      pop bp
-      ret
-podprog endp
-end
+;################# ИВБ-111 ##################
+;############### Федоров Д.Ю. ###############
+;########## Лабораторная работа №4 ##########
+include io.asm                              ;
+.model small                                ;
+.stack 100                                  ; Начало сегмента стека
+.data                                       ; Начало сегмента данных
+array1 db 100 dup(?)                        ;
+.code                                       ; Начало сегмента кода
+public podprog                              ; Доступ подпрограммы для других программ
+podprog proc far                            ; Сегмент + 16-битное смещение
+      push bp                               ; Получение адреса возврата из стека. Выше bp располагаются - параметры. Ниже bp располагаются локальные переменные. Ещё ниже временные переменные.
+      mov bp, sp                            ; Запись Stack pointer в bp
+      mov cx, [bp+8]                        ;
+      mov bx, [bp+6]                        ;
+      mov si, 0                             ; Обнуление счетчика si, отвечающего за индекс элемента строки
+starting:                                   ; Метка starting                             ; ]
+      mov al, ' '                           ;
+      mov dx, [bx]                          ;
+      cmp dl, al                            ; Сравнение введенного символа с пробелом
+      jne ifelse                            ; Если не пробел - переход на метку ifelse
+      jmp cycle                             ; Иначе (т.е. если пробел) - переход на метку cycle
+ifelse:                                     ; Метка ifelse
+      mov array1[si], dl                    ; Запись введенного символа в массив по текущему индексу
+      inc si                                ; Увеличение счетчика индекса массива
+cycle:                                      ; Метка cycle
+      inc bx                                ;
+      loop starting                         ; Новая итерация цикла
+      mov al, '$'                           ; Запись символа конца строки в al
+      mov array1[si], al                    ; Запись в конец строки символа конца строки
+      mov bx, offset array1                 ;
+      newline                               ;
+      mov sp, bp                            ;
+      pop bp                                ;
+      ret                                   ;
+podprog endp                                ;
+end                                         ;
